@@ -8,17 +8,13 @@ static SV *hv_clone (SV *, int);
 static SV *av_clone (SV *, int);
 static SV *sv_clone (SV *, int);
 static SV *rv_clone (SV *, int);
-static SV *ref_of_clone (SV *, SV *);
-static SV *clone_object (SV * , int );
 
 static HV *hseen;
 
 #if(0)
-#define TRACEME(a) printf("%s:%d %s\n",__FUNCTION__, __LINE__, a)
-#define TRACERF(a) printf("%s:%d 0x%x\n",__FUNCTION__, __LINE__, a)
+#define TRACEME(a) printf("%s:%d: ",__FUNCTION__, __LINE__) && printf a;
 #else
 #define TRACEME(a)
-#define TRACERF(a)
 #endif
 
 static SV *
@@ -27,7 +23,6 @@ hv_clone (SV * ref, int depth)
   HV *clone = newHV ();
   HV *self = (HV *) ref;
   HE *next = NULL;
-  MAGIC *mg = NULL;
   I32 retlen = 0;
   char *key;
   SV *val;
@@ -35,28 +30,18 @@ hv_clone (SV * ref, int depth)
 
   assert(SvTYPE(ref) == SVt_PVHV);
 
-  TRACERF(ref);
+  TRACEME(("ref = 0x%x\n", ref));
 
   hv_iterinit (self);
   while (next = hv_iternext (self))
     {
       key = hv_iterkey (next, &retlen);
       val = hv_iterval (self, next);
-      val = clone_object (val, recur);
+      val = sv_clone (val, recur);
       hv_store (clone, key, retlen, SvREFCNT_inc(val), 0);
     }
 
-  if (SvRMAGICAL(ref) && (mg = mg_find(ref, 'P')))
-    {
-      SV *tie = NULL;
-      TRACEME("magic hash");
-      if(!mg)
-        croak("couldn't find magic");
-      tie = clone_object(mg->mg_obj,-1);
-      sv_magic((SV *) clone, tie, 'P', 0, 0);
-    }
-
-  TRACERF(clone);
+  TRACEME(("clone = 0x%x\n", clone));
   return (SV *) clone;
 }
 
@@ -65,7 +50,6 @@ av_clone (SV * ref, int depth)
 {
   AV *clone = newAV ();
   AV *self = (AV *) ref;
-  MAGIC *mg = NULL;
   SV **svp;
   SV *val = NULL;
   I32 arrlen = 0;
@@ -74,7 +58,7 @@ av_clone (SV * ref, int depth)
 
   assert(SvTYPE(ref) == SVt_PVAV);
 
-  TRACERF(ref);
+  TRACEME(("ref = 0x%x\n", ref));
 
   arrlen = av_len (self);
   av_extend (clone, arrlen);
@@ -85,55 +69,13 @@ av_clone (SV * ref, int depth)
       if (svp)
 	{
 	  val = *svp;
-          val = clone_object (val, recur);
+          val = sv_clone (val, recur);
 	  av_store (clone, i, SvREFCNT_inc(val));
 	}
     }
 
-  if (SvRMAGICAL(ref) && (mg = mg_find(ref, 'P')))
-    {
-      SV *tie = NULL;
-      TRACEME("magic array");
-      if(!mg)
-        croak("couldn't find magic");
-      tie = clone_object(mg->mg_obj,-1);
-      sv_magic((SV *) clone, tie, 'P', 0, 0);
-    }
-
-  TRACERF(clone);
+  TRACEME(("clone = 0x%x\n", clone));
   return (SV *) clone;
-}
-
-static SV *
-sv_clone (SV * ref, int depth)
-{
-  SV *clone = NULL;
-  SV *self = (SV *) ref;
-  MAGIC *mg = NULL;
-
-  assert(SvTYPE(ref) == SVt_PVMG
-      || SvTYPE(ref) == SVt_IV
-      || SvTYPE(ref) == SVt_NV
-      || SvTYPE(ref) == SVt_PV
-  );
-
-  TRACERF(ref);
-
-  clone = newSVsv (self);
-
-  if (SvRMAGICAL(ref) && (mg = mg_find(ref, 'q')))
-    {
-      SV *tie = NULL;
-      TRACEME("magic scalar");
-      if(!mg)
-        croak("couldn't find magic for scalar");
-      tie = clone_object(mg->mg_obj,-1);
-      sv_magic((SV *) clone, tie, 'q', 0, 0);
-    }
-
-
-  TRACERF(clone);
-  return clone;
 }
 
 static SV *
@@ -142,117 +84,126 @@ rv_clone (SV * ref, int depth)
   SV *clone = NULL;
   SV *rv = NULL;
 
-  assert(SvROK(ref) && (SvTYPE(ref) == SVt_RV));
+  assert(SvROK(ref));
 
-  TRACERF(ref);
+  TRACEME(("ref = 0x%x\n", ref));
 
   if (!SvROK (ref))
     return NULL;
 
-  TRACERF(SvRV (ref));
-
-  clone = clone_object (SvRV(ref), depth);
-
-  if (SvRMAGICAL(ref) && (mg_find(ref, 'q')))
-    TRACEME("magic ref?");
-
-  TRACERF(clone);
-  return ref_of_clone (ref, clone);
-}
-
-static SV *
-ref_of_clone (SV * orig, SV * clone)
-{
-  SV *rv = NULL;
-  if (sv_isobject (orig))
+  if (sv_isobject (ref))
     {
-      /* rv = newRV_inc (clone); */ /* faster, but causes memory leak. */
-      rv = newRV_noinc (clone);
-      rv = sv_2mortal (sv_bless (rv, SvSTASH (SvRV (orig))));
+      clone = newRV_noinc(sv_clone (SvRV(ref), depth));
+      sv_2mortal (sv_bless (clone, SvSTASH (SvRV (ref))));
     }
   else
-    rv = newRV_inc (clone);
+    clone = newRV_inc(sv_clone (SvRV(ref), depth));
     
-
-  TRACERF(rv);
-  return rv;
+  TRACEME(("clone = 0x%x\n", clone));
+  return clone;
 }
 
 static SV *
-clone_object (SV * ref, int depth)
+sv_clone (SV * ref, int depth)
 {
   SV *clone = ref;
+  MAGIC *mg = NULL;
+  SV **svh = NULL;
+  int mg_type = 0;
 
-  TRACERF(ref);
+  TRACEME(("ref = 0x%x\n", ref));
 
-  if (depth)
+  if (depth == 0)
+    return SvREFCNT_inc(ref);
+
+  svh = hv_fetch(hseen, (char *) &ref, sizeof(ref), FALSE);
+
+  if(svh)
     {
-      SV **svh = hv_fetch(hseen, (char *) &ref, sizeof(ref), FALSE);
-
-      if(svh)
-        {
-          TRACEME("fetch ref");
-          TRACERF(ref);
-          TRACERF(*svh);
-          return SvREFCNT_inc(*svh);
-        }
-
-      TRACEME("switch:");
-      switch (SvTYPE (ref))
-        {
-          case SVt_NULL:
-            TRACEME("sv_null");
-            TRACERF(ref);
-            clone = newSVsv(&PL_sv_undef);
-            break;
-          case SVt_PVHV:
-            clone = hv_clone (ref, depth);
-            break;
-          case SVt_PVAV:
-            clone = av_clone (ref, depth);
-            break;
-          case SVt_PVMG:
-            TRACEME("magic scalar");
-          case SVt_IV:
-            TRACEME("int scalar");
-          case SVt_NV:
-            TRACEME("double scalar");
-          case SVt_PV:
-            TRACEME("string scalar");
-            clone = sv_clone(ref, depth);
-            break;
-          case SVt_PVCV:
-            TRACEME("code ref");
-            TRACERF(ref);
-            /* we don't want to clone a CV */
-            /* just return the ref */
-            clone = ref;
-            break;
-          case SVt_RV:
-            TRACEME("ref scalar");
-            TRACERF(ref);
-            clone = rv_clone(ref, depth);
-            break;
-          default:
-            /* just copy the ref */
-            TRACEME("default");
-            TRACERF(ref);
-            TRACERF(SvTYPE (ref));
-            clone = newSVsv(ref);
-            break;
-        }
-      TRACEME("storing ref");
-      TRACERF(ref);
-      TRACERF(clone);
-      if (!hv_store(hseen, (char *) &ref, sizeof(ref), clone, 0))
-         croak("couldn't store clone");
+      TRACEME(("fetch ref (0x%x)\n", ref));
+      return SvREFCNT_inc(*svh);
     }
-  else
-     clone = SvREFCNT_inc(ref);
 
-  TRACEME("ref and clone:");
-  TRACERF(ref);
-  TRACERF(clone);
+  TRACEME(("switch: (0x%x)\n", ref));
+  switch (SvTYPE (ref))
+    {
+      case SVt_NULL:	/* 0 */
+        TRACEME(("sv_null"));
+        clone = newSVsv(&PL_sv_undef);
+        break;
+      case SVt_IV:		/* 1 */
+        TRACEME(("int scalar"));
+      case SVt_NV:		/* 2 */
+        TRACEME(("double scalar"));
+        mg_type = 'q';
+        clone = newSVsv (ref);
+        break;
+      case SVt_RV:		/* 3 */
+        TRACEME(("ref scalar"));
+        clone = rv_clone(ref, depth);
+        break;
+      case SVt_PV:		/* 4 */
+        TRACEME(("string scalar"));
+        mg_type = 'q';
+        clone = newSVsv (ref);
+        break;
+      case SVt_PVIV:		/* 5 */
+        TRACEME (("PVIV double-type\n"));
+      case SVt_PVNV:		/* 6 */
+        TRACEME (("PVNV double-type\n"));
+        clone = newSVsv (ref);
+        if (SvROK (ref))
+        {
+	          TRACEME (("RV double-type\n"));
+	          sv_setsv (clone, rv_clone (ref, depth));
+	          if (SvNOKp (ref))
+	            SvNOK_on (clone);
+	          else
+	            SvIOK_on (clone);
+        }
+        TRACEME (("clone = 0x%x\n", clone));
+        break;
+      case SVt_PVMG:	/* 7 */
+        TRACEME(("magic scalar"));
+        mg_type = 'q';
+        clone = newSVsv (ref);
+        break;
+      case SVt_PVAV:	/* 10 */
+        mg_type = 'P';
+        clone = av_clone (ref, depth);
+        break;
+      case SVt_PVHV:	/* 11 */
+        mg_type = 'P';
+        clone = hv_clone (ref, depth);
+        break;
+      case SVt_PVBM:	/* 8 */
+      case SVt_PVLV:	/* 9 */
+      case SVt_PVCV:	/* 12 */
+      case SVt_PVGV:	/* 13 */
+      case SVt_PVFM:	/* 14 */
+      case SVt_PVIO:	/* 15 */
+        TRACEME(("default: type = 0x%x\n", SvTYPE (ref)));
+        clone = SvREFCNT_inc(ref);  /* just return the ref */
+        break;
+      default:
+        croak("unkown type: 0x%x", SvTYPE(ref));
+    }
+
+  if (SvRMAGICAL(ref) && (mg = mg_find(ref, mg_type)))
+    {
+      SV *tie = NULL;
+      TRACEME(("magic scalar"));
+      if(!mg)
+        croak("couldn't find magic for scalar");
+      tie = sv_clone(mg->mg_obj,-1);
+      sv_magic((SV *) clone, tie, mg_type, 0, 0);
+    }
+
+  TRACEME(("storing ref = 0x%x clone = 0x%x\n", ref, clone));
+  if (!hv_store(hseen, (char *) &ref, sizeof(ref), clone, 0))
+    croak("couldn't store clone");
+
+  TRACEME(("clone = 0x%x\n", clone));
   return clone;
 }
 
@@ -266,8 +217,8 @@ clone(self, depth=-1)
 	SV *    clone = &PL_sv_undef;
 	PPCODE:
 	hseen = newHV();
-	TRACERF(self);
-	clone = rv_clone(self, depth);
+	TRACEME(("ref = 0x%x\n", self));
+	clone = sv_clone(self, depth);
 	{
 	  HE * he;
 	  hv_iterinit(hseen);
@@ -276,6 +227,5 @@ clone(self, depth=-1)
 	}
 	hv_undef(hseen);                /* Free seen object table */
 	sv_free((SV *) hseen);  /* Free HV */
-	TRACERF(&PL_sv_undef);
 	EXTEND(SP,1);
 	PUSHs(clone);

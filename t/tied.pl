@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: tied.pl,v 0.9 2000/08/21 23:06:34 ray Exp $
+# $Id: tied.pl,v 0.10 2001/04/29 21:56:10 ray Exp $
 #
 #  Copyright (c) 1995-1998, Raphael Manfredi
 #  
@@ -8,6 +8,12 @@
 #  as specified in the README file that comes with the distribution.
 #
 # $Log: tied.pl,v $
+# Revision 0.10  2001/04/29 21:56:10  ray
+# VERSION 0.10
+#
+# Revision 0.9  2001/03/05 00:11:49  ray
+# version 0.9
+#
 # Revision 0.9  2000/08/21 23:06:34  ray
 # added support for code refs
 #

@@ -1,34 +1,4 @@
-# $Id: Clone.pm,v 0.9 2000/08/21 23:05:55 ray Exp $
-#
-# $Log: Clone.pm,v $
-# Revision 0.9  2000/08/21 23:05:55  ray
-# added support for code refs
-#
-# Revision 0.8  2000/08/11 17:08:24  ray
-# Release 0.08.
-#
-# Revision 0.7.2.1  2000/08/11 16:35:09  ray
-# added linke to Storable(3), removed C++ style comments.
-#
-# Revision 0.7  2000/08/01 00:31:24  ray
-# release 0.07.
-#
-# Revision 0.6.2.6  2000/08/01 00:26:10  ray
-# added Optimization for inline functions.
-#
-# Revision 0.6.2.5  2000/07/31 18:37:03  ray
-# added support for tied objects.
-#
-# Revision 0.6.2.4  2000/07/28 20:40:25  ray
-# added support for circular references
-#
-# Revision 0.6.2.3  2000/07/28 19:04:14  ray
-# first pass at circular references.
-#
-# Revision 0.6.2.2  2000/07/28 18:54:33  ray
-# added support for scalar types.
-#
-#
+# $Id: Clone.pm,v 0.10 2001/04/29 22:14:01 ray Exp $
 package Clone;
 
 use strict;
@@ -46,7 +16,7 @@ require AutoLoader;
 @EXPORT = qw();
 @EXPORT_OK = qw( clone );
 
-$VERSION = '0.09';
+( $VERSION ) = '$Revision: 0.10 $ ' =~ /\$Revision:\s+([^\s]+)/;
 
 bootstrap Clone $VERSION;
 
@@ -84,7 +54,7 @@ depth of the copy.
 
 =head1 AUTHOR
 
-Ray Finch, ray@classmates.com
+Ray Finch, rdf@cpan.org
 
 Copyright 2000 Ray Finch.
 
