@@ -5,7 +5,9 @@ WriteMakefile(
     'NAME'	=> 'Clone',
     'VERSION_FROM' => 'Clone.pm', # finds $VERSION
     'LIBS'	=> [''],   # e.g., '-lm' 
-    'DEFINE'	=> '-g',     # e.g., '-DHAVE_SOMETHING' 
-    'INC'	=> '-g',     # e.g., '-I/usr/include/other' 
+    'DEFINE'	=> '',     # e.g., '-DHAVE_SOMETHING' 
+    'INC'	=> '',     # e.g., '-I/usr/include/other' 
+#    'OPTIMIZE'	=> '-g',     # e.g., '-I/usr/include/other' 
+    'OPTIMIZE'	=> '-O3',     # e.g., '-I/usr/include/other' 
 );
 

@@ -18,7 +18,7 @@ print "ok 1\n";
 # (correspondingly "not ok 13") depending on the success of chunk 13
 # of the test code):
 
-package Test::Array;
+package Test::Scalar;
 
 use vars @ISA;
 
@@ -27,8 +27,14 @@ use vars @ISA;
 sub new
   {
     my $class = shift;
-    my @self = @_;
-    bless \@self, $class;
+    my $self = shift;
+    bless \$self, $class;
+  }
+
+sub DESTROY 
+  {
+    my $self = shift;
+    # warn "DESTROYING $self";
   }
 
 package main;
@@ -38,26 +44,15 @@ sub not_ok { print "not ok $test\n"; $test++ }
 
 $^W = 0;
 $test = 2;
-my $a = Test::Array->new(
-    1, 
-    [ 'two', 
-      [ 3,
-        ['four']
-      ],
-    ],
-  );
-my $b = $a->clone(0);
-my $c = $a->clone(2);
 
-# TEST 2
-$b->[1][0] eq 'two' ? ok : not_ok;
+my $a = Test::Scalar->new(1.0);
+my $b = $a->clone(1);
 
-# TEST 3
-$b->[1] == $a->[1] ? ok : not_ok;
+$$a == $$b ? ok : not_ok;
+$a != $b ? ok : not_ok;
 
-# TEST 4
-$c->[1] != $a->[1] ? ok : not_ok;
+my $c = \"test 2 scalar";
+my $d = Clone::clone($c, 2);
 
-# TEST 5
-$c->[1][1][1] == $a->[1][1][1] ? ok : not_ok;
-
+$$c == $$d ? ok : not_ok;
+$c != $d ? ok : not_ok;

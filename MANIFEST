@@ -5,3 +5,8 @@ Makefile.PL
 MANIFEST
 t/01array.t
 t/02hash.t
+t/03scalar.t
+t/04tie.t
+t/dclone.t
+t/dump.pl
+t/tied.pl

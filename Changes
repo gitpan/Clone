@@ -1,5 +1,22 @@
 Revision history for Perl extension Clone.
 
+$Log: Changes,v $
+Revision 0.7  2000/08/01 00:31:24  ray
+release 0.07.
+
+Revision 0.6.2.3  2000/07/28 20:40:25  ray
+added support for circular references
+
+Revision 0.6.2.2  2000/07/28 19:04:14  ray
+first pass at circular references.
+
+Revision 0.6.2.1  2000/07/28 18:54:33  ray
+added support for scalar types.
+
+
+0.06  Thu May 25 17:48:59 2000 GMT
+	- initial release to CPAN.
+
 0.01  Tue May 16 08:55:10 2000
 	- original version; created by h2xs 1.19
 

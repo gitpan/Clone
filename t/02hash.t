@@ -59,7 +59,7 @@ my $a = Test::Hash->new(
   );
 
 my $b = $a->clone(0);
-my $c = $a->clone(2);
+my $c = $a->clone(3);
 
 $a->{level} == $b->{level} ? ok : not_ok;
 
