@@ -1,6 +1,13 @@
 Revision history for Perl extension Clone.
 
 $Log: Changes,v $
+Revision 0.15  2003/09/07 22:02:35  ray
+VERSION 0.15
+
+Revision 0.13.2.3  2003/09/07 21:51:03  ray
+added support for unicode hash keys. This is only really a bug in 5.8.0 and
+the test in t/03scalar supports this.
+
 Revision 0.14  2003/09/07 05:48:10  ray
 VERSION 0.14
 

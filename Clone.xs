@@ -4,7 +4,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static char *rcs_id = "$Id: Clone.xs,v 0.14 2003/09/07 05:48:10 ray Exp $";
+static char *rcs_id = "$Id: Clone.xs,v 0.15 2003/09/07 22:02:35 ray Exp $";
 
 #define CLONE_KEY(x) ((char *) x) 
 
@@ -42,9 +42,6 @@ hv_clone (SV * ref, SV * target, int depth)
   HV *clone = (HV *) target;
   HV *self = (HV *) ref;
   HE *next = NULL;
-  I32 retlen = 0;
-  char *key;
-  SV *val;
   int recur = depth ? depth - 1 : 0;
 
   assert(SvTYPE(ref) == SVt_PVHV);
@@ -54,8 +51,8 @@ hv_clone (SV * ref, SV * target, int depth)
   hv_iterinit (self);
   while (next = hv_iternext (self))
     {
-      key = hv_iterkey (next, &retlen);
-      hv_store (clone, key, retlen,
+      SV *key = hv_iterkeysv (next);
+      hv_store_ent (clone, key, 
                 sv_clone (hv_iterval (self, next), recur), 0);
     }
 

@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: dclone.t,v 0.13 2002/06/12 06:41:55 ray Exp $
+# $Id: dclone.t,v 0.14 2003/09/07 22:02:36 ray Exp $
 #
 # Id: dclone.t,v 0.6.1.1 2000/03/02 22:21:05 ram Exp 
 #
@@ -10,6 +10,13 @@
 #  as specified in the README file that comes with the distribution.
 #
 # $Log: dclone.t,v $
+# Revision 0.14  2003/09/07 22:02:36  ray
+# VERSION 0.15
+#
+# Revision 0.13.2.1  2003/09/07 21:51:13  ray
+# added support for unicode hash keys. This is only really a bug in 5.8.0 and
+# the test in t/03scalar supports this.
+#
 # Revision 0.13  2002/06/12 06:41:55  ray
 # VERSION 0.13
 #

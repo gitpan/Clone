@@ -1,4 +1,4 @@
-# $Id: 02hash.t,v 0.14 2003/09/07 05:48:11 ray Exp $
+# $Id: 02hash.t,v 0.15 2003/09/07 22:02:36 ray Exp $
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
@@ -7,7 +7,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..11\n"; }
+BEGIN { $| = 1; print "1..12\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Clone qw( clone );
 use Data::Dumper;
@@ -83,3 +83,10 @@ my %circ = ();
 $circ{c} = \%circ;
 my $cref = clone(\%circ);
 Dumper(\%circ) eq Dumper($cref) ? ok : not_ok;
+
+# test for unicode support
+{
+  my $a = { chr(256) => 1 };
+  my $b = clone( $a );
+  ord( (keys(%$a))[0] ) == ord( (keys(%$b))[0] ) ? ok : not_ok;
+}
