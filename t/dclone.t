@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: dclone.t,v 0.11 2001/07/29 19:31:05 ray Exp $
+# $Id: dclone.t,v 0.13 2002/06/12 06:41:55 ray Exp $
 #
 # Id: dclone.t,v 0.6.1.1 2000/03/02 22:21:05 ram Exp 
 #
@@ -10,6 +10,9 @@
 #  as specified in the README file that comes with the distribution.
 #
 # $Log: dclone.t,v $
+# Revision 0.13  2002/06/12 06:41:55  ray
+# VERSION 0.13
+#
 # Revision 0.11  2001/07/29 19:31:05  ray
 # VERSION 0.11
 #

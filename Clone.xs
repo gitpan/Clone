@@ -4,6 +4,8 @@
 #include "perl.h"
 #include "XSUB.h"
 
+static char *rcs_id = "$Id: Clone.xs,v 0.14 2003/09/07 05:48:10 ray Exp $";
+
 #define CLONE_KEY(x) ((char *) x) 
 
 #define CLONE_STORE(x,y)						\
@@ -154,7 +156,8 @@ sv_clone (SV * ref, int depth)
         TRACEME(("ref scalar\n"));
         clone = NEWSV(1002, 0);
         sv_upgrade(clone, SVt_RV);
-        SvROK_on(clone);
+	/* move the following to SvROK section below */
+        /* SvROK_on(clone); */
         break;
       case SVt_PV:		/* 4 */
         TRACEME(("string scalar\n"));
@@ -218,16 +221,27 @@ sv_clone (SV * ref, int depth)
   if (SvMAGICAL(ref) )
     {
       MAGIC* mg;
-      MAGIC** mgp;
+      MGVTBL *vtable = 0;
 
-      for (mgp = &SvMAGIC(ref); mg = *mgp; mgp = &mg->mg_moremagic) 
+      for (mg = SvMAGIC(ref); mg; mg = mg->mg_moremagic) 
       {
+        SV *obj;
+	/* we don't want to clone a qr (regexp) object */
+	/* there are probably other types as well ...  */
+        if (mg->mg_type == 'r')
+          obj = mg->mg_obj; 
+	else
+          obj = sv_clone(mg->mg_obj, -1); 
+	/* this is plain old magic, so do the same thing */
         sv_magic(clone, 
-                 sv_clone(mg->mg_obj, -1), 
+                 obj,
                  mg->mg_type, 
                  mg->mg_ptr, 
                  mg->mg_len);
       }
+      /* major kludge - why does the vtable for a qr type need to be null? */
+      if ( mg = mg_find(clone, 'r') )
+        mg->mg_virtual = (MGVTBL *) NULL;
     }
     /* 2: HASH/ARRAY  - (with 'internal' elements) */
   else if ( SvTYPE(ref) == SVt_PVHV )
@@ -237,6 +251,7 @@ sv_clone (SV * ref, int depth)
     /* 3: REFERENCE (inlined for speed) */
   else if (SvROK (ref))
     {
+      SvROK_on(clone);  /* only set if ROK is set if ref */
       TRACEME(("clone = 0x%x(%d)\n", clone, SvREFCNT(clone)));
       SvRV(clone) = sv_clone (SvRV(ref), depth); /* Clone the referent */
       if (sv_isobject (ref))

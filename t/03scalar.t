@@ -1,3 +1,4 @@
+# $Id: 03scalar.t,v 0.14 2003/09/07 05:48:11 ray Exp $
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
@@ -6,7 +7,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..6\n"; }
+BEGIN { $| = 1; print "1..9\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Clone qw( clone );
 use Data::Dumper;
@@ -62,3 +63,15 @@ my $circ = undef;
 $circ = \$circ;
 $aref = clone($circ);
 Dumper($circ) eq Dumper($aref) ? ok : not_ok;
+
+# the following used to produce a segfault, rt.cpan.org id=2264
+undef $a;
+$b = clone($a);
+$$a == $$b ? ok : not_ok;
+
+# used to get a segfault cloning a ref to a qr data type.
+my $str = 'abcdefg';
+my $qr = qr/$str/;
+my $qc = clone( $qr );
+$qr eq $qc ? ok : not_ok;
+$str =~ /$qc/ ? ok : not_ok;

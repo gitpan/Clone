@@ -1,6 +1,18 @@
 Revision history for Perl extension Clone.
 
 $Log: Changes,v $
+Revision 0.14  2003/09/07 05:48:10  ray
+VERSION 0.14
+
+Revision 0.13.2.2  2003/09/07 05:45:52  ray
+bug fix: refs to a qr (regexp) expression was causing a segfault.
+
+Revision 0.13.2.1  2003/09/06 20:18:37  ray
+Bug fix on cloning references, only set ROK in clone if it's set in ref.
+
+Revision 0.13  2002/06/12 06:42:14  ray
+VERSION 0.13
+
 Revision 0.13  2002/02/03 02:12:29  ray
 VERSION 0.13
 
