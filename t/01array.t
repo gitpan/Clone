@@ -6,9 +6,10 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..5\n"; }
+BEGIN { $| = 1; print "1..6\n"; }
 END {print "not ok 1\n" unless $loaded;}
-use Clone;
+use Clone qw( clone );
+use Data::Dumper;
 $loaded = 1;
 print "ok 1\n";
 
@@ -61,3 +62,7 @@ $c->[1] != $a->[1] ? ok : not_ok;
 # TEST 5
 $c->[1][1][1] == $a->[1][1][1] ? ok : not_ok;
 
+my @circ = ();
+$circ[0] = \@circ;
+$aref = clone(\@circ);
+Dumper(\@circ) eq Dumper($aref) ? ok : not_ok;

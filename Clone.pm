@@ -1,4 +1,4 @@
-# $Id: Clone.pm,v 0.10 2001/04/29 22:14:01 ray Exp $
+# $Id: Clone.pm,v 0.12 2001/09/30 20:35:27 ray Exp $
 package Clone;
 
 use strict;
@@ -16,7 +16,7 @@ require AutoLoader;
 @EXPORT = qw();
 @EXPORT_OK = qw( clone );
 
-( $VERSION ) = '$Revision: 0.10 $ ' =~ /\$Revision:\s+([^\s]+)/;
+( $VERSION ) = '$Revision: 0.12 $ ' =~ /\$Revision:\s+([^\s]+)/;
 
 bootstrap Clone $VERSION;
 
@@ -29,40 +29,60 @@ __END__
 
 =head1 NAME
 
-Clone - Perl extension for a recurrsive copy of nested objects.
+Clone - recursively copy Perl datatypes
 
 =head1 SYNOPSIS
 
   use Clone;
   
-  push @Package::A::ISA, 'Clone';
+  push @Foo::ISA, 'Clone';
 
-  $a = new Package::A;
-  $b = $a->clone;
+  $a = new Foo;
+  $b = $a->clone();
   
   # or
-  use Clone qw(clone);
 
-  $b = clone($a,1);
+  use Clone qw(clone);
+  
+  $a = { 'foo' => 'bar', 'move' => 'zig' };
+  $b = [ 'alpha', 'beta', 'gamma', 'vlissides' ];
+  $c = new Foo();
+
+  $d = clone($a);
+  $e = clone($b);
+  $f = clone($c);
 
 =head1 DESCRIPTION
 
-The Clone module provides a clone method for making recursive
-copies of nested hash, array, and scalar objects, as well as
-tied variables. An optional parameter can be used to limit the 
-depth of the copy.
+This module provides a clone() method which makes recursive
+copies of nested hash, array, scalar and reference types, 
+including tied variables and objects.
+
+
+clone() takes a scalar argument and an optional parameter that 
+can be used to limit the depth of the copy. To duplicate lists,
+arrays or hashes, pass them in by reference. e.g.
+    
+    my $copy = clone (\@array);
+
+    # or
+
+    my %copy = %{ clone (\%hash) };
+    
+
+For a slower, but more flexible solution see Storable's dclone().
 
 =head1 AUTHOR
 
 Ray Finch, rdf@cpan.org
 
-Copyright 2000 Ray Finch.
+Copyright 2001 Ray Finch.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-perl(1), Storable(3).
+Storable(3).
 
 =cut

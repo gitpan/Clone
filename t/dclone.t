@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: dclone.t,v 0.10 2001/04/29 21:56:10 ray Exp $
+# $Id: dclone.t,v 0.11 2001/07/29 19:31:05 ray Exp $
 #
 # Id: dclone.t,v 0.6.1.1 2000/03/02 22:21:05 ram Exp 
 #
@@ -10,6 +10,12 @@
 #  as specified in the README file that comes with the distribution.
 #
 # $Log: dclone.t,v $
+# Revision 0.11  2001/07/29 19:31:05  ray
+# VERSION 0.11
+#
+# Revision 0.10.2.1  2001/07/28 21:47:49  ray
+# commented out print statements.
+#
 # Revision 0.10  2001/04/29 21:56:10  ray
 # VERSION 0.10
 #
@@ -80,8 +86,8 @@ $foo = FOO->make;
 print "not " unless defined($r = $foo->clone);
 print "ok 5\n";
 
-print &dump($foo);
-print &dump($r);
+# print &dump($foo);
+# print &dump($r);
 print "not " unless &dump($foo) eq &dump($r);
 print "ok 6\n";
 

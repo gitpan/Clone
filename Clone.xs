@@ -4,23 +4,40 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static SV *hv_clone (SV *, int);
-static SV *av_clone (SV *, int);
+#define CLONE_KEY(x) ((char *) x) 
+
+#define CLONE_STORE(x,y)						\
+do {									\
+    if (!hv_store(HSEEN, CLONE_KEY(x), PTRSIZE, SvREFCNT_inc(y), 0)) {	\
+	SvREFCNT_dec(y); /* Restore the refcount */			\
+	croak("Can't store clone in seen hash (HSEEN)");		\
+    }									\
+    else {	\
+  TRACEME(("storing ref = 0x%x clone = 0x%x\n", ref, clone));	\
+  TRACEME(("clone = 0x%x(%d)\n", clone, SvREFCNT(clone)));	\
+  TRACEME(("ref = 0x%x(%d)\n", ref, SvREFCNT(ref)));	\
+    }									\
+} while (0)
+
+#define CLONE_FETCH(x) (hv_fetch(HSEEN, CLONE_KEY(x), PTRSIZE, 0))
+
+static SV *hv_clone (SV *, SV *, int);
+static SV *av_clone (SV *, SV *, int);
 static SV *sv_clone (SV *, int);
 static SV *rv_clone (SV *, int);
 
-static HV *hseen;
+static HV *HSEEN;
 
-#if(0)
+#ifdef DEBUG_CLONE
 #define TRACEME(a) printf("%s:%d: ",__FUNCTION__, __LINE__) && printf a;
 #else
 #define TRACEME(a)
 #endif
 
 static SV *
-hv_clone (SV * ref, int depth)
+hv_clone (SV * ref, SV * target, int depth)
 {
-  HV *clone = newHV ();
+  HV *clone = (HV *) target;
   HV *self = (HV *) ref;
   HE *next = NULL;
   I32 retlen = 0;
@@ -30,25 +47,24 @@ hv_clone (SV * ref, int depth)
 
   assert(SvTYPE(ref) == SVt_PVHV);
 
-  TRACEME(("ref = 0x%x\n", ref));
+  TRACEME(("ref = 0x%x(%d)\n", ref, SvREFCNT(ref)));
 
   hv_iterinit (self);
   while (next = hv_iternext (self))
     {
       key = hv_iterkey (next, &retlen);
-      val = hv_iterval (self, next);
-      val = sv_clone (val, recur);
-      hv_store (clone, key, retlen, SvREFCNT_inc(val), 0);
+      hv_store (clone, key, retlen,
+                sv_clone (hv_iterval (self, next), recur), 0);
     }
 
-  TRACEME(("clone = 0x%x\n", clone));
+  TRACEME(("clone = 0x%x(%d)\n", clone, SvREFCNT(clone)));
   return (SV *) clone;
 }
 
 static SV *
-av_clone (SV * ref, int depth)
+av_clone (SV * ref, SV * target, int depth)
 {
-  AV *clone = newAV ();
+  AV *clone = (AV *) target;
   AV *self = (AV *) ref;
   SV **svp;
   SV *val = NULL;
@@ -58,7 +74,10 @@ av_clone (SV * ref, int depth)
 
   assert(SvTYPE(ref) == SVt_PVAV);
 
-  TRACEME(("ref = 0x%x\n", ref));
+  TRACEME(("ref = 0x%x(%d)\n", ref, SvREFCNT(ref)));
+
+  if (SvREFCNT(ref) > 1)
+    CLONE_STORE(ref, (SV *)clone);
 
   arrlen = av_len (self);
   av_extend (clone, arrlen);
@@ -67,14 +86,10 @@ av_clone (SV * ref, int depth)
     {
       svp = av_fetch (self, i, 0);
       if (svp)
-	{
-	  val = *svp;
-          val = sv_clone (val, recur);
-	  av_store (clone, i, SvREFCNT_inc(val));
-	}
+	av_store (clone, i, sv_clone (*svp, recur));
     }
 
-  TRACEME(("clone = 0x%x\n", clone));
+  TRACEME(("clone = 0x%x(%d)\n", clone, SvREFCNT(clone)));
   return (SV *) clone;
 }
 
@@ -83,10 +98,11 @@ rv_clone (SV * ref, int depth)
 {
   SV *clone = NULL;
   SV *rv = NULL;
+  UV visible = (SvREFCNT(ref) > 1);
 
   assert(SvROK(ref));
 
-  TRACEME(("ref = 0x%x\n", ref));
+  TRACEME(("ref = 0x%x(%d)\n", ref, SvREFCNT(ref)));
 
   if (!SvROK (ref))
     return NULL;
@@ -99,7 +115,7 @@ rv_clone (SV * ref, int depth)
   else
     clone = newRV_inc(sv_clone (SvRV(ref), depth));
     
-  TRACEME(("clone = 0x%x\n", clone));
+  TRACEME(("clone = 0x%x(%d)\n", clone, SvREFCNT(clone)));
   return clone;
 }
 
@@ -107,44 +123,41 @@ static SV *
 sv_clone (SV * ref, int depth)
 {
   SV *clone = ref;
-  MAGIC *mg = NULL;
-  SV **svh = NULL;
-  int mg_type = 0;
+  SV **seen = NULL;
+  UV visible = (SvREFCNT(ref) > 1);
 
-  TRACEME(("ref = 0x%x\n", ref));
+  TRACEME(("ref = 0x%x(%d)\n", ref, SvREFCNT(ref)));
 
   if (depth == 0)
     return SvREFCNT_inc(ref);
 
-  svh = hv_fetch(hseen, (char *) &ref, sizeof(ref), FALSE);
-
-  if(svh)
+  if (visible && (seen = CLONE_FETCH(ref)))
     {
       TRACEME(("fetch ref (0x%x)\n", ref));
-      return SvREFCNT_inc(*svh);
+      return SvREFCNT_inc(*seen);
     }
 
   TRACEME(("switch: (0x%x)\n", ref));
   switch (SvTYPE (ref))
     {
       case SVt_NULL:	/* 0 */
-        TRACEME(("sv_null"));
-        clone = newSVsv(&PL_sv_undef);
+        TRACEME(("sv_null\n"));
+        clone = newSVsv (ref);
         break;
       case SVt_IV:		/* 1 */
-        TRACEME(("int scalar"));
+        TRACEME(("int scalar\n"));
       case SVt_NV:		/* 2 */
-        TRACEME(("double scalar"));
-        mg_type = 'q';
+        TRACEME(("double scalar\n"));
         clone = newSVsv (ref);
         break;
       case SVt_RV:		/* 3 */
-        TRACEME(("ref scalar"));
-        clone = rv_clone(ref, depth);
+        TRACEME(("ref scalar\n"));
+        clone = NEWSV(1002, 0);
+        sv_upgrade(clone, SVt_RV);
+        SvROK_on(clone);
         break;
       case SVt_PV:		/* 4 */
-        TRACEME(("string scalar"));
-        mg_type = 'q';
+        TRACEME(("string scalar\n"));
         clone = newSVsv (ref);
         break;
       case SVt_PVIV:		/* 5 */
@@ -152,29 +165,16 @@ sv_clone (SV * ref, int depth)
       case SVt_PVNV:		/* 6 */
         TRACEME (("PVNV double-type\n"));
         clone = newSVsv (ref);
-        if (SvROK (ref))
-        {
-	          TRACEME (("RV double-type\n"));
-	          sv_setsv (clone, rv_clone (ref, depth));
-	          if (SvNOKp (ref))
-	            SvNOK_on (clone);
-	          else
-	            SvIOK_on (clone);
-        }
-        TRACEME (("clone = 0x%x\n", clone));
         break;
       case SVt_PVMG:	/* 7 */
-        TRACEME(("magic scalar"));
-        mg_type = 'q';
+        TRACEME(("magic scalar\n"));
         clone = newSVsv (ref);
         break;
       case SVt_PVAV:	/* 10 */
-        mg_type = 'P';
-        clone = av_clone (ref, depth);
+        clone = (SV *) newAV();
         break;
       case SVt_PVHV:	/* 11 */
-        mg_type = 'P';
-        clone = hv_clone (ref, depth);
+        clone = (SV *) newHV();
         break;
       case SVt_PVBM:	/* 8 */
       case SVt_PVLV:	/* 9 */
@@ -189,25 +189,73 @@ sv_clone (SV * ref, int depth)
         croak("unkown type: 0x%x", SvTYPE(ref));
     }
 
-  if (SvRMAGICAL(ref) && (mg = mg_find(ref, mg_type)))
+  /**
+    * It is *vital* that this is performed *before* recursion,
+    * to properly handle circular references. cb 2001-02-06
+    */
+
+  if ( visible )
+    CLONE_STORE(ref,clone);
+
+    /*
+     * We'll assume (in the absence of evidence to the contrary) that A) a
+     * tied hash/array doesn't store its elements in the usual way (i.e.
+     * the mg->mg_object(s) take full responsibility for them) and B) that
+     * references aren't tied.
+     *
+     * If theses assumptions hold, the three options below are mutually
+     * exclusive.
+     *
+     * More precisely: 1 & 2 are probably mutually exclusive; 2 & 3 are 
+     * definitely mutually exclusive; we have to test 1 before giving 2
+     * a chance; and we'll assume that 1 & 3 are mutually exclusive unless
+     * and until we can be test-cased out of our delusion.
+     *
+     * chocolateboy: 2001-05-29
+     */
+     
+    /* 1: TIED */
+  if (SvMAGICAL(ref) )
     {
-      SV *tie = NULL;
-      TRACEME(("magic scalar"));
-      if(!mg)
-        croak("couldn't find magic for scalar");
-      tie = sv_clone(mg->mg_obj,-1);
-      sv_magic((SV *) clone, tie, mg_type, 0, 0);
+      MAGIC* mg;
+      MAGIC** mgp;
+
+      for (mgp = &SvMAGIC(ref); mg = *mgp; mgp = &mg->mg_moremagic) 
+      {
+        sv_magic(clone, 
+                 sv_clone(mg->mg_obj, -1), 
+                 mg->mg_type, 
+                 mg->mg_ptr, 
+                 mg->mg_len);
+      }
+    }
+    /* 2: HASH/ARRAY  - (with 'internal' elements) */
+  else if ( SvTYPE(ref) == SVt_PVHV )
+    clone = hv_clone (ref, clone, depth);
+  else if ( SvTYPE(ref) == SVt_PVAV )
+    clone = av_clone (ref, clone, depth);
+    /* 3: REFERENCE (inlined for speed) */
+  else if (SvROK (ref))
+    {
+      TRACEME(("clone = 0x%x(%d)\n", clone, SvREFCNT(clone)));
+      SvRV(clone) = sv_clone (SvRV(ref), depth); /* Clone the referent */
+      if (sv_isobject (ref))
+      {
+          sv_bless (clone, SvSTASH (SvRV (ref)));
+      }
     }
 
-  TRACEME(("storing ref = 0x%x clone = 0x%x\n", ref, clone));
-  if (!hv_store(hseen, (char *) &ref, sizeof(ref), clone, 0))
-    croak("couldn't store clone");
-
-  TRACEME(("clone = 0x%x\n", clone));
+  TRACEME(("clone = 0x%x(%d)\n", clone, SvREFCNT(clone)));
   return clone;
 }
 
 MODULE = Clone		PACKAGE = Clone		
+
+PROTOTYPES: ENABLE
+
+BOOT:
+/* Initialize HSEEN */
+HSEEN = newHV(); if (!HSEEN) croak ("Can't initialize seen hash (HSEEN)");
 
 void
 clone(self, depth=-1)
@@ -216,16 +264,8 @@ clone(self, depth=-1)
 	PREINIT:
 	SV *    clone = &PL_sv_undef;
 	PPCODE:
-	hseen = newHV();
 	TRACEME(("ref = 0x%x\n", self));
 	clone = sv_clone(self, depth);
-	{
-	  HE * he;
-	  hv_iterinit(hseen);
-	  while (he = hv_iternext(hseen))
-	    HeVAL(he) = &PL_sv_undef;
-	}
-	hv_undef(hseen);                /* Free seen object table */
-	sv_free((SV *) hseen);  /* Free HV */
+	hv_clear(HSEEN);  /* Free HV */
 	EXTEND(SP,1);
-	PUSHs(clone);
+	PUSHs(sv_2mortal(clone));

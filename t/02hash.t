@@ -6,9 +6,10 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..10\n"; }
+BEGIN { $| = 1; print "1..11\n"; }
 END {print "not ok 1\n" unless $loaded;}
-use Clone;
+use Clone qw( clone );
+use Data::Dumper;
 $loaded = 1;
 print "ok 1\n";
 
@@ -58,6 +59,8 @@ my $a = Test::Hash->new(
     },
   );
 
+$a->{a} = $a;
+
 my $b = $a->clone(0);
 my $c = $a->clone(3);
 
@@ -74,3 +77,8 @@ $c->{href}{href}{href}{level} == 4 ? ok : not_ok;
 
 $b->{href}{href}{href} == $a->{href}{href}{href} ? ok : not_ok;
 $c->{href}{href}{href} == $a->{href}{href}{href} ? ok : not_ok;
+
+my %circ = ();
+$circ{c} = \%circ;
+my $cref = clone(\%circ);
+Dumper(\%circ) eq Dumper($cref) ? ok : not_ok;

@@ -6,9 +6,9 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..4\n"; }
+BEGIN { $| = 1; print "1..10\n"; }
 END {print "not ok 1\n" unless $loaded;}
-use Clone;
+use Clone qw( clone );
 $loaded = 1;
 print "ok 1\n";
 
@@ -18,6 +18,9 @@ print "ok 1\n";
 # (correspondingly "not ok 13") depending on the success of chunk 13
 # of the test code):
 
+# code to test for memory leaks
+
+use Benchmark;
 use Data::Dumper;
 use Storable qw( dclone );
 
@@ -55,8 +58,27 @@ package main;
   my $a = Test::Hash->new();
   my $b = $a->clone;
   my $c = dclone($a);
-#   printf("a = 0x%x count = %d\n", $a, $a->count);
-#   printf("b = 0x%x count = %d\n", $b, $b->count);
-#   printf("c = 0x%x count = %d\n", $c, $c->count);
 }
 
+# benchmarking bug
+{
+  my $a = Test::Hash->new();
+  my $sref = sub { my $b = clone($a) };
+  $sref->();
+}
+
+# test for cloning unblessed ref
+{
+  my $a = {};
+  my $b = clone($a);
+  bless $a, 'Test::Hash';
+  bless $b, 'Test::Hash';
+}
+
+# test for cloning unblessed ref
+{
+  my $a = [];
+  my $b = clone($a);
+  bless $a, 'Test::Hash';
+  bless $b, 'Test::Hash';
+}
