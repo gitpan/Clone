@@ -1,0 +1,7 @@
+Changes
+Clone.pm
+Clone.xs
+Makefile.PL
+MANIFEST
+t/01array.t
+t/02hash.t
