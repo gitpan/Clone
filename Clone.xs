@@ -221,6 +221,13 @@ clone_object (SV * ref, int depth)
             TRACEME("string scalar");
             clone = sv_clone(ref, depth);
             break;
+          case SVt_PVCV:
+            TRACEME("code ref");
+            TRACERF(ref);
+            /* we don't want to clone a CV */
+            /* just return the ref */
+            clone = ref;
+            break;
           case SVt_RV:
             TRACEME("ref scalar");
             TRACERF(ref);

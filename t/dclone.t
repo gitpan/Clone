@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: dclone.t,v 0.8 2000/08/11 17:08:36 ray Exp $
+# $Id: dclone.t,v 0.9 2000/08/21 23:06:34 ray Exp $
 #
 # Id: dclone.t,v 0.6.1.1 2000/03/02 22:21:05 ram Exp 
 #
@@ -10,6 +10,9 @@
 #  as specified in the README file that comes with the distribution.
 #
 # $Log: dclone.t,v $
+# Revision 0.9  2000/08/21 23:06:34  ray
+# added support for code refs
+#
 # Revision 0.8  2000/08/11 17:08:36  ray
 # Release 0.08.
 #
@@ -17,7 +20,7 @@
 # release 0.07
 #
 # Revision 0.6  2000/07/28 21:37:20  ray
-# initial checkin to CVS.
+# "borrowed" code from Storable
 #
 # Revision 0.6.1.1  2000/03/02 22:21:05  ram
 # patch9: added test case for "undef" bug in hashes

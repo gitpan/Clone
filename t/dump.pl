@@ -1,24 +1,20 @@
-;# $Id: dump.pl,v 0.8 2000/08/11 17:08:36 ray Exp $
-;# Id: dump.pl,v 0.6 1998/06/04 16:08:27 ram Exp 
+;# Id: dump.pl,v 0.7 2000/08/03 22:04:45 ram Exp 
 ;#
-;#  Copyright (c) 1995-1998, Raphael Manfredi
+;#  Copyright (c) 1995-2000, Raphael Manfredi
 ;#  
 ;#  You may redistribute only under the terms of the Artistic License,
 ;#  as specified in the README file that comes with the distribution.
 ;#
-;# $Log: dump.pl,v $
-;# Revision 0.8  2000/08/11 17:08:36  ray
-;# Release 0.08.
+;# Log: dump.pl,v 
+;# Revision 0.7  2000/08/03 22:04:45  ram
+;# Baseline for second beta release.
 ;#
-;# Revision 0.7  2000/08/01 00:33:37  ray
-;# release 0.07
-;#
-;# Revision 0.6  2000/07/28 21:37:20  ray
-;# initial checkin to CVS.
-;#
-;# Revision 0.6  1998/06/04 16:08:27  ram
-;# Baseline for first beta release.
-;#
+
+sub ok {
+	my ($num, $ok) = @_;
+	print "not " unless $ok;
+	print "ok $num\n";
+}
 
 package dump;
 use Carp;
@@ -28,6 +24,7 @@ use Carp;
 	'ARRAY'		=> 'dump_array',
 	'HASH'		=> 'dump_hash',
 	'REF'		=> 'dump_ref',
+	'CODE'		=> 'dump_code',
 );
 
 # Given an object, dump its transitive data closure
@@ -70,7 +67,6 @@ sub recursive_dump {
 
 	if ($link && $dumped{$addr}++) {
 		my $num = $object{$addr};
-		# $dumped .= "OBJECT #$num seen  ($addr)\n";
 		$dumped .= "OBJECT #$num seen\n";
 		return;
 	}
@@ -87,7 +83,6 @@ sub recursive_dump {
 	&{$dump{$ref}}($object);	# Dump object
 	&bless($bless) if $bless;	# Mark it as blessed, if necessary
 
-	# $dumped .= "OBJECT $objcount ($addr)\n";
 	$dumped .= "OBJECT $objcount\n";
 }
 
@@ -147,6 +142,13 @@ sub dump_ref {
 	my $deref = $$rref;				# Follow reference to reference
 	$dumped .= 'REF ';
 	&recursive_dump($deref, 1);		# $dref is a reference
+}
+
+
+# Dump code
+sub dump_code {
+	my ($sref) = @_;
+	$dumped .= "CODE\n";
 }
 
 1;

@@ -1,6 +1,9 @@
-# $Id: Clone.pm,v 0.8 2000/08/11 17:08:24 ray Exp $
+# $Id: Clone.pm,v 0.9 2000/08/21 23:05:55 ray Exp $
 #
 # $Log: Clone.pm,v $
+# Revision 0.9  2000/08/21 23:05:55  ray
+# added support for code refs
+#
 # Revision 0.8  2000/08/11 17:08:24  ray
 # Release 0.08.
 #
@@ -43,7 +46,7 @@ require AutoLoader;
 @EXPORT = qw();
 @EXPORT_OK = qw( clone );
 
-$VERSION = '0.08';
+$VERSION = '0.09';
 
 bootstrap Clone $VERSION;
 
