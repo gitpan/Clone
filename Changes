@@ -1,6 +1,9 @@
 Revision history for Perl extension Clone.
 
 $Log: Changes,v $
+Revision 0.8  2000/08/11 17:08:24  ray
+Release 0.08.
+
 Revision 0.7  2000/08/01 00:31:24  ray
 release 0.07.
 

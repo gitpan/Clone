@@ -166,7 +166,7 @@ ref_of_clone (SV * orig, SV * clone)
   SV *rv = NULL;
   if (sv_isobject (orig))
     {
-      // rv = newRV_inc (clone); // faster, but causes memory leak.
+      /* rv = newRV_inc (clone); */ /* faster, but causes memory leak. */
       rv = newRV_noinc (clone);
       rv = sv_2mortal (sv_bless (rv, SvSTASH (SvRV (orig))));
     }
@@ -195,7 +195,6 @@ clone_object (SV * ref, int depth)
           TRACERF(ref);
           TRACERF(*svh);
           return SvREFCNT_inc(*svh);
-          // return *svh;
         }
 
       TRACEME("switch:");
@@ -204,8 +203,7 @@ clone_object (SV * ref, int depth)
           case SVt_NULL:
             TRACEME("sv_null");
             TRACERF(ref);
-            // clone = newSVsv(&PL_sv_undef);
-            clone = sv_2mortal(newSVsv(&PL_sv_undef));
+            clone = newSVsv(&PL_sv_undef);
             break;
           case SVt_PVHV:
             clone = hv_clone (ref, depth);
@@ -229,12 +227,11 @@ clone_object (SV * ref, int depth)
             clone = rv_clone(ref, depth);
             break;
           default:
-            // just copy the ref
+            /* just copy the ref */
             TRACEME("default");
             TRACERF(ref);
             TRACERF(SvTYPE (ref));
-            // clone = newSVsv(ref);
-            clone = sv_2mortal(newSVsv(ref));
+            clone = newSVsv(ref);
             break;
         }
       TRACEME("storing ref");
@@ -263,7 +260,6 @@ clone(self, depth=-1)
 	PPCODE:
 	hseen = newHV();
 	TRACERF(self);
-	// clone = clone_object(self, depth);
 	clone = rv_clone(self, depth);
 	{
 	  HE * he;

@@ -1,6 +1,12 @@
-# $Id: Clone.pm,v 0.7 2000/08/01 00:31:24 ray Exp $
+# $Id: Clone.pm,v 0.8 2000/08/11 17:08:24 ray Exp $
 #
 # $Log: Clone.pm,v $
+# Revision 0.8  2000/08/11 17:08:24  ray
+# Release 0.08.
+#
+# Revision 0.7.2.1  2000/08/11 16:35:09  ray
+# added linke to Storable(3), removed C++ style comments.
+#
 # Revision 0.7  2000/08/01 00:31:24  ray
 # release 0.07.
 #
@@ -37,7 +43,7 @@ require AutoLoader;
 @EXPORT = qw();
 @EXPORT_OK = qw( clone );
 
-$VERSION = '0.07';
+$VERSION = '0.08';
 
 bootstrap Clone $VERSION;
 
@@ -84,6 +90,6 @@ modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-perl(1).
+perl(1), Storable(3).
 
 =cut
