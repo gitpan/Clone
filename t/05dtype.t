@@ -19,7 +19,13 @@ print "ok 1\n";
 # of the test code):
 
 use Data::Dumper;
-use Storable qw( dclone );
+eval 'use Storable qw( dclone )';
+if ($@) 
+{
+  print "ok 2 # skipping Storable not found\n";
+  exit;
+}
+# use Storable qw( dclone );
 
 $^W = 0;
 $test = 2;

@@ -6,7 +6,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..10\n"; }
+BEGIN { $| = 1; print "1..9\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Clone qw( clone );
 $loaded = 1;
@@ -22,7 +22,7 @@ print "ok 1\n";
 
 use Benchmark;
 use Data::Dumper;
-use Storable qw( dclone );
+# use Storable qw( dclone );
 
 $^W = 0;
 $test = 2;
@@ -57,7 +57,7 @@ package main;
 {
   my $a = Test::Hash->new();
   my $b = $a->clone;
-  my $c = dclone($a);
+  # my $c = dclone($a);
 }
 
 # benchmarking bug
