@@ -4,7 +4,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static char *rcs_id = "$Id: Clone.xs,v 0.15 2003/09/07 22:02:35 ray Exp $";
+static char *rcs_id = "$Id: Clone.xs,v 0.16 2005/04/20 15:49:35 ray Exp $";
 
 #define CLONE_KEY(x) ((char *) x) 
 
@@ -215,6 +215,7 @@ sv_clone (SV * ref, int depth)
      */
      
     /* 1: TIED */
+  int magic_ref = 0;
   if (SvMAGICAL(ref) )
     {
       MAGIC* mg;
@@ -225,10 +226,13 @@ sv_clone (SV * ref, int depth)
         SV *obj;
 	/* we don't want to clone a qr (regexp) object */
 	/* there are probably other types as well ...  */
-        if (mg->mg_type == 'r')
+	if (mg->mg_type == 'r')
           obj = mg->mg_obj; 
+	else if (mg->mg_type == PERL_MAGIC_backref)
+          continue; 
 	else
           obj = sv_clone(mg->mg_obj, -1); 
+	magic_ref++;
 	/* this is plain old magic, so do the same thing */
         sv_magic(clone, 
                  obj,
@@ -241,6 +245,10 @@ sv_clone (SV * ref, int depth)
         mg->mg_virtual = (MGVTBL *) NULL;
     }
     /* 2: HASH/ARRAY  - (with 'internal' elements) */
+  if ( magic_ref )
+  {
+    ;;
+  }
   else if ( SvTYPE(ref) == SVt_PVHV )
     clone = hv_clone (ref, clone, depth);
   else if ( SvTYPE(ref) == SVt_PVAV )
