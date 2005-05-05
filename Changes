@@ -1,9 +1,15 @@
 Revision history for Perl extension Clone.
 
 $Log: Changes,v $
+Revision 0.17  2005/05/05 22:26:01  ray
+Changed PERL_MAGIC_backref to '<' for compatability with 5.6
+
 Revision 0.16  2005/04/20 15:49:35  ray
 Bug fix for id 11997, "Clone dies horribly when Scalar::Util::weaken is around"
 see http://rt.cpan.org/Ticket/Display.html?id=11997 for details.
+
+Revision 0.15.2.1  2005/05/05 21:55:30  ray
+changed PERL_MAGIC_backref to '<' for backward compatibility with 5.6
 
 Revision 0.15  2003/09/07 22:02:35  ray
 VERSION 0.15

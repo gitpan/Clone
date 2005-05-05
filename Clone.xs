@@ -4,7 +4,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static char *rcs_id = "$Id: Clone.xs,v 0.16 2005/04/20 15:49:35 ray Exp $";
+static char *rcs_id = "$Id: Clone.xs,v 0.17 2005/05/05 22:26:01 ray Exp $";
 
 #define CLONE_KEY(x) ((char *) x) 
 
@@ -228,7 +228,7 @@ sv_clone (SV * ref, int depth)
 	/* there are probably other types as well ...  */
 	if (mg->mg_type == 'r')
           obj = mg->mg_obj; 
-	else if (mg->mg_type == PERL_MAGIC_backref)
+	else if (mg->mg_type == '<') /* PERL_MAGIC_backref */
           continue; 
 	else
           obj = sv_clone(mg->mg_obj, -1); 
