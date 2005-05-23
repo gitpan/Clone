@@ -4,7 +4,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static char *rcs_id = "$Id: Clone.xs,v 0.17 2005/05/05 22:26:01 ray Exp $";
+static char *rcs_id = "$Id: Clone.xs,v 0.18 2005/05/23 15:34:31 ray Exp $";
 
 #define CLONE_KEY(x) ((char *) x) 
 
@@ -124,6 +124,7 @@ sv_clone (SV * ref, int depth)
   SV *clone = ref;
   SV **seen = NULL;
   UV visible = (SvREFCNT(ref) > 1);
+  int magic_ref = 0;
 
   TRACEME(("ref = 0x%x(%d)\n", ref, SvREFCNT(ref)));
 
@@ -215,7 +216,6 @@ sv_clone (SV * ref, int depth)
      */
      
     /* 1: TIED */
-  int magic_ref = 0;
   if (SvMAGICAL(ref) )
     {
       MAGIC* mg;
