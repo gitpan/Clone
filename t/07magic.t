@@ -1,42 +1,37 @@
-# $Id: 07magic.t,v 1.2 2005/04/20 15:49:35 ray Exp $
-# Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl test.pl'
-
-######################### We start with some black magic to print on failure.
-
-# Change 1..1 below to 1..last_test_to_print .
-# (It may become useful if the test is moved to ./t subdirectory.)
-
-BEGIN { $| = 1; print "1..2\n"; }
-END {print "not ok 1\n" unless $loaded;}
-use Clone;
-use Data::Dumper;
-$loaded = 1;
-print "ok 1\n";
-
-######################### End of black magic.
-
-# Insert your test code below (better if it prints "ok 13"
-# (correspondingly "not ok 13") depending on the success of chunk 13
-# of the test code):
-
-$^W = 0;
-$test = 2;
-
-sub ok     { printf("ok %d\n", $test++); }
-sub not_ok { printf("not ok %d\n", $test++); }
+# $Id: 07magic.t,v 1.3 2006/03/06 06:59:40 ray Exp $
 
 use strict;
 
-package main;
+use Clone;
+use Test::More tests => 2;
 
-use Scalar::Util qw( weaken );
+SKIP: {
+  eval "use Data::Dumper";
+  skip "Data::Dumper not installed", 1 if $@;
 
-my $x = { a => "worked\n" }; 
-my $y = $x;
-weaken($y);
-my $z = Clone::clone($x);
-Dumper($x) eq Dumper($z) ? ok : not_ok;
+  SKIP: {
+    eval "use Scalar::Util qw( weaken )";
+    skip "Scalar::Util not installed", 1 if $@;
+  
+    my $x = { a => "worked\n" }; 
+    my $y = $x;
+    weaken($y);
+    my $z = Clone::clone($x);
+    ok( Dumper($x) eq Dumper($z), "Cloned weak reference");
+  }
+}
 
-# print Dumper($a, $b);
-# print Dumper($a, $c);
+SKIP: {
+  eval "use Taint::Runtime qw(enable taint_env)";
+  skip "Taint::Runtime not installed", 1 if $@;
+  taint_env();
+  my $x = "";
+  for (keys %ENV)
+  {
+    $x = $ENV{$_};
+    last if ( $x && length($x) > 0 );
+  }
+  my $y = Clone::clone($x);
+  ## ok(Clone::clone($tainted), "Tainted input");
+  ok( Dumper($x) eq Dumper($y), "Tainted input");
+}

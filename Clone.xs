@@ -4,7 +4,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static char *rcs_id = "$Id: Clone.xs,v 0.18 2005/05/23 15:34:31 ray Exp $";
+static char *rcs_id = "$Id: Clone.xs,v 0.19 2006/03/06 07:22:32 ray Exp $";
 
 #define CLONE_KEY(x) ((char *) x) 
 
@@ -226,12 +226,21 @@ sv_clone (SV * ref, int depth)
         SV *obj;
 	/* we don't want to clone a qr (regexp) object */
 	/* there are probably other types as well ...  */
-	if (mg->mg_type == 'r')
-          obj = mg->mg_obj; 
-	else if (mg->mg_type == '<') /* PERL_MAGIC_backref */
-          continue; 
-	else
-          obj = sv_clone(mg->mg_obj, -1); 
+        TRACEME(("magic type: %c\n", mg->mg_type));
+        switch (mg->mg_type)
+          {
+            case 'r':	/* PERL_MAGIC_qr  */
+              obj = mg->mg_obj; 
+              break;
+            case 't':	/* PERL_MAGIC_taint */
+	      continue;
+              break;
+            case '<':	/* PERL_MAGIC_backref */
+	      continue;
+              break;
+            default:
+              obj = sv_clone(mg->mg_obj, -1); 
+          }
 	magic_ref++;
 	/* this is plain old magic, so do the same thing */
         sv_magic(clone, 
