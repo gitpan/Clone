@@ -1,6 +1,10 @@
 Revision history for Perl extension Clone.
 
 $Log: Changes,v $
+Revision 0.20  2006/03/08 17:15:23  ray
+Commented out VERSION causes errors with DynaLoader in perl 5.6.1 (and
+probably all earlier versions. It was removed.
+
 Revision 0.19  2006/03/06 07:22:32  ray
 added a test and fix for tainted variables.
 use a static VERSION in Clone.pm.
