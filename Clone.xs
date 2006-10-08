@@ -4,7 +4,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static char *rcs_id = "$Id: Clone.xs,v 0.19 2006/03/06 07:22:32 ray Exp $";
+static char *rcs_id = "$Id: Clone.xs,v 0.20 2006-10-08 03:37:20 ray Exp $";
 
 #define CLONE_KEY(x) ((char *) x) 
 

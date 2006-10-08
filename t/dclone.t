@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: dclone.t,v 0.14 2003/09/07 22:02:36 ray Exp $
+# $Id: dclone.t,v 0.18 2006-10-08 03:37:29 ray Exp $
 #
 # Id: dclone.t,v 0.6.1.1 2000/03/02 22:21:05 ram Exp 
 #
@@ -10,6 +10,10 @@
 #  as specified in the README file that comes with the distribution.
 #
 # $Log: dclone.t,v $
+# Revision 0.18  2006-10-08 03:37:29  ray
+# Commented out VERSION causes errors with DynaLoader in perl 5.6.1 (and
+# probably all earlier versions. It was removed.
+#
 # Revision 0.14  2003/09/07 22:02:36  ray
 # VERSION 0.15
 #

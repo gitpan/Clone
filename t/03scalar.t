@@ -1,4 +1,4 @@
-# $Id: 03scalar.t,v 0.15 2003/09/07 22:02:36 ray Exp $
+# $Id: 03scalar.t,v 0.19 2006-10-08 03:37:29 ray Exp $
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 

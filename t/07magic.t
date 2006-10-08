@@ -1,9 +1,9 @@
-# $Id: 07magic.t,v 1.3 2006/03/06 06:59:40 ray Exp $
+# $Id: 07magic.t,v 1.7 2006-10-08 05:25:23 ray Exp $
 
 use strict;
 
 use Clone;
-use Test::More tests => 2;
+use Test::More tests => 3;
 
 SKIP: {
   eval "use Data::Dumper";
@@ -34,4 +34,20 @@ SKIP: {
   my $y = Clone::clone($x);
   ## ok(Clone::clone($tainted), "Tainted input");
   ok( Dumper($x) eq Dumper($y), "Tainted input");
+}
+
+## RT 21859: Clone segfault (isolated example)
+SKIP: {
+  eval "use utf8";
+  skip "error in use utf8", 1 if $@;
+  my $string = "HDDR-WD-250JS";
+  utf8::upgrade($string);
+  $string = sprintf ('<<bg_color=%s>>%s<</bg_color>>%s',
+        '#EA0',
+        substr ($string, 0, 4),
+        substr ($string, 4),
+      );
+  print $string, "\n";
+  my $z = Clone::clone($string);
+  ok( 1, "At least it didn't segfault!");
 }
