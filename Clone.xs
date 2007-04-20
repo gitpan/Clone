@@ -4,7 +4,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static char *rcs_id = "$Id: Clone.xs,v 0.21 2006-10-08 04:02:56 ray Exp $";
+static char *rcs_id = "$Id: Clone.xs,v 0.22 2007-04-20 05:40:27 ray Exp $";
 
 #define CLONE_KEY(x) ((char *) x) 
 
@@ -177,7 +177,9 @@ sv_clone (SV * ref, int depth)
       case SVt_PVHV:	/* 11 */
         clone = (SV *) newHV();
         break;
+      #if PERL_VERSION <= 8
       case SVt_PVBM:	/* 8 */
+      #endif
       case SVt_PVLV:	/* 9 */
       case SVt_PVCV:	/* 12 */
       case SVt_PVGV:	/* 13 */

@@ -1,4 +1,4 @@
-# $Id: Clone.pm,v 0.22 2006-10-08 05:35:19 ray Exp $
+# $Id: Clone.pm,v 0.23 2007-04-20 05:40:27 ray Exp $
 package Clone;
 
 use strict;
@@ -16,7 +16,7 @@ require AutoLoader;
 @EXPORT = qw();
 @EXPORT_OK = qw( clone );
 
-$VERSION = '0.22';
+$VERSION = '0.23';
 
 bootstrap Clone $VERSION;
 

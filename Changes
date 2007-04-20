@@ -1,6 +1,10 @@
 Revision history for Perl extension Clone.
 
 $Log: Changes,v $
+Revision 0.23  2007-04-20 05:40:27  ray
+Applied patch so clone will contiue to work with newer perls.
+Also fixed test to work with older perls.
+
 Revision 0.22  2006-10-08 05:35:19  ray
 D'oh! The 0.21 tardist that I just uploaded to CPAN contained the 0.20 Clone.xs file. This release is just in case any of the 0.21 releases get mirrored.
 
