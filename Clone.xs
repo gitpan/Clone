@@ -4,7 +4,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static char *rcs_id = "$Id: Clone.xs,v 0.22 2007-04-20 05:40:27 ray Exp $";
+static char *rcs_id = "$Id: Clone.xs,v 0.23 2007-07-13 17:28:51 ray Exp $";
 
 #define CLONE_KEY(x) ((char *) x) 
 
@@ -279,6 +279,9 @@ sv_clone (SV * ref, int depth)
       if (sv_isobject (ref))
       {
           sv_bless (clone, SvSTASH (SvRV (ref)));
+      }
+      if (SvWEAKREF(ref)) {
+          sv_rvweaken(clone);
       }
     }
 

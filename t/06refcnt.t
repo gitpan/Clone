@@ -1,4 +1,4 @@
-# $Id: 06refcnt.t,v 0.18 2006-10-08 03:37:29 ray Exp $
+# $Id: 06refcnt.t,v 0.19 2007-07-13 17:28:53 ray Exp $
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
@@ -7,7 +7,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..9\n"; }
+BEGIN { $| = 1; print "1..12\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Clone qw( clone );
 $loaded = 1;
@@ -21,7 +21,7 @@ print "ok 1\n";
 
 # code to test for memory leaks
 
-use Benchmark;
+## use Benchmark;
 use Data::Dumper;
 # use Storable qw( dclone );
 
@@ -82,4 +82,16 @@ package main;
   my $b = clone($a);
   bless $a, 'Test::Hash';
   bless $b, 'Test::Hash';
+}
+
+# test for cloning weak reference
+{
+  use Scalar::Util qw(weaken isweak);
+  my $a = new Test::Hash();
+  ##   my $b = new Test::Hash();
+  ##   $b->{r} = $a;
+  my $b = { r => $a };
+  $a->{r} = $b;
+  weaken($b->{'r'});
+  my $c = clone($a);
 }
