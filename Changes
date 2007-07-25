@@ -1,6 +1,15 @@
 Revision history for Perl extension Clone.
 
 $Log: Changes,v $
+Revision 0.25  2007-07-25 03:41:04  ray
+Latest patch from Ruslan Zakirov. Patched another memory leak.
+
+Revision 0.24  2007-07-25 03:33:57  ray
+Bug fix for 5.9.*, for some reason the 'visible' logic is no longer working.
+I #if 'ed it out until I figure out what is going on.
+Also removed an old redundant CLONE_STORE, could have been the cause of some
+memory leaks.
+
 Revision 0.23  2007-04-20 05:40:27  ray
 Applied patch so clone will contiue to work with newer perls.
 Also fixed test to work with older perls.

@@ -4,7 +4,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static char *rcs_id = "$Id: Clone.xs,v 0.24 2007-07-19 04:49:13 ray Exp $";
+static char *rcs_id = "$Id: Clone.xs,v 0.26 2007-07-25 03:41:04 ray Exp $";
 
 #define CLONE_KEY(x) ((char *) x) 
 
@@ -75,8 +75,10 @@ av_clone (SV * ref, SV * target, int depth)
 
   TRACEME(("ref = 0x%x(%d)\n", ref, SvREFCNT(ref)));
 
-  if (SvREFCNT(ref) > 1)
-    CLONE_STORE(ref, (SV *)clone);
+  /* The following is a holdover from a very old version */
+  /* possible cause of memory leaks */
+  /* if ( (SvREFCNT(ref) > 1) ) */
+  /*   CLONE_STORE(ref, (SV *)clone); */
 
   arrlen = av_len (self);
   av_extend (clone, arrlen);
@@ -97,7 +99,6 @@ rv_clone (SV * ref, int depth)
 {
   SV *clone = NULL;
   SV *rv = NULL;
-  UV visible = (SvREFCNT(ref) > 1);
 
   assert(SvROK(ref));
 
@@ -123,7 +124,13 @@ sv_clone (SV * ref, int depth)
 {
   SV *clone = ref;
   SV **seen = NULL;
+#if PERL_REVISION >= 5 && PERL_VERSION > 8
+  /* This is a hack for perl 5.9.*, save everything */
+  /* until I find out why mg_find is no longer working */
+  UV visible = 1;
+#else
   UV visible = (SvREFCNT(ref) > 1) || (SvMAGICAL(ref) && mg_find(ref, '<'));
+#endif
   int magic_ref = 0;
 
   TRACEME(("ref = 0x%x(%d)\n", ref, SvREFCNT(ref)));
@@ -152,10 +159,7 @@ sv_clone (SV * ref, int depth)
         break;
       case SVt_RV:		/* 3 */
         TRACEME(("ref scalar\n"));
-        clone = NEWSV(1002, 0);
-        sv_upgrade(clone, SVt_RV);
-	/* move the following to SvROK section below */
-        /* SvROK_on(clone); */
+        clone = newSVsv (ref);
         break;
       case SVt_PV:		/* 4 */
         TRACEME(("string scalar\n"));
@@ -273,8 +277,8 @@ sv_clone (SV * ref, int depth)
     /* 3: REFERENCE (inlined for speed) */
   else if (SvROK (ref))
     {
-      SvROK_on(clone);  /* only set if ROK is set if ref */
       TRACEME(("clone = 0x%x(%d)\n", clone, SvREFCNT(clone)));
+      SvREFCNT_dec(SvRV(clone));
       SvRV(clone) = sv_clone (SvRV(ref), depth); /* Clone the referent */
       if (sv_isobject (ref))
       {
