@@ -1,5 +1,5 @@
 use ExtUtils::MakeMaker;
-# $Id: Makefile.PL,v 0.18 2006-10-08 03:37:20 ray Exp $
+# $Id: Makefile.PL,v 0.19 2007-10-15 04:57:20 ray Exp $
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 WriteMakefile(
@@ -10,5 +10,6 @@ WriteMakefile(
     'INC'	=> '',     # e.g., '-I/usr/include/other' 
 #    'OPTIMIZE'	=> '-g',     # e.g., '-I/usr/include/other' 
     'OPTIMIZE'	=> '-O3',     # e.g., '-I/usr/include/other' 
+    clean => {FILES => '_Inline'},
 );
 

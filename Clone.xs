@@ -4,9 +4,9 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static char *rcs_id = "$Id: Clone.xs,v 0.26 2007-07-25 03:41:04 ray Exp $";
+static char *rcs_id = "$Id: Clone.xs,v 0.27 2007-10-15 04:52:42 ray Exp $";
 
-#define CLONE_KEY(x) ((char *) x) 
+#define CLONE_KEY(x) ((char *) &x) 
 
 #define CLONE_STORE(x,y)						\
 do {									\

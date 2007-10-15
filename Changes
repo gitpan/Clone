@@ -1,6 +1,12 @@
 Revision history for Perl extension Clone.
 
 $Log: Changes,v $
+Revision 0.26  2007-10-15 04:52:42  ray
+Made a change in CLONE_KEY to the way Clone stores refs in the ref hash.
+Perl no longer uses the SvANY part of the SV struct in the same way which
+meams the old way of storing the hash key is no longer unique.
+Thanks to Slaven Rezic for the patch.
+
 Revision 0.25  2007-07-25 03:41:04  ray
 Latest patch from Ruslan Zakirov. Patched another memory leak.
 
