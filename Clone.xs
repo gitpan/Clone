@@ -4,7 +4,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static char *rcs_id = "$Id: Clone.xs,v 0.27 2007-10-15 04:52:42 ray Exp $";
+static char *rcs_id = "$Id: Clone.xs,v 0.28 2008-07-12 16:49:01 ray Exp $";
 
 #define CLONE_KEY(x) ((char *) &x) 
 
@@ -157,10 +157,12 @@ sv_clone (SV * ref, int depth)
         TRACEME(("double scalar\n"));
         clone = newSVsv (ref);
         break;
+#if PERL_VERSION <= 10
       case SVt_RV:		/* 3 */
         TRACEME(("ref scalar\n"));
         clone = newSVsv (ref);
         break;
+#endif
       case SVt_PV:		/* 4 */
         TRACEME(("string scalar\n"));
         clone = newSVsv (ref);
@@ -183,6 +185,8 @@ sv_clone (SV * ref, int depth)
         break;
       #if PERL_VERSION <= 8
       case SVt_PVBM:	/* 8 */
+      #elif PERL_VERSION >= 11
+      case SVt_REGEXP:	/* 8 */
       #endif
       case SVt_PVLV:	/* 9 */
       case SVt_PVCV:	/* 12 */
