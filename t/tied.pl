@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: tied.pl,v 0.18 2006-10-08 03:37:29 ray Exp $
+# $Id: tied.pl,v 0.18 2006/10/08 03:37:29 ray Exp $
 #
 #  Copyright (c) 1995-1998, Raphael Manfredi
 #  
@@ -8,7 +8,7 @@
 #  as specified in the README file that comes with the distribution.
 #
 # $Log: tied.pl,v $
-# Revision 0.18  2006-10-08 03:37:29  ray
+# Revision 0.18  2006/10/08 03:37:29  ray
 # Commented out VERSION causes errors with DynaLoader in perl 5.6.1 (and
 # probably all earlier versions. It was removed.
 #

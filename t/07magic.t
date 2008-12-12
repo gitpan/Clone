@@ -1,4 +1,4 @@
-# $Id: 07magic.t,v 1.8 2007-04-20 05:40:48 ray Exp $
+# $Id: 07magic.t,v 1.8 2007/04/20 05:40:48 ray Exp $
 
 use strict;
 

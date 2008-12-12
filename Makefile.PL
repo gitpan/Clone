@@ -1,5 +1,5 @@
 use ExtUtils::MakeMaker;
-# $Id: Makefile.PL,v 0.19 2007-10-15 04:57:20 ray Exp $
+# $Id: Makefile.PL,v 0.19 2007/10/15 04:57:20 ray Exp $
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 WriteMakefile(

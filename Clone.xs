@@ -4,15 +4,15 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static char *rcs_id = "$Id: Clone.xs,v 0.28 2008-07-12 16:49:01 ray Exp $";
+static char *rcs_id = "$Id: Clone.xs,v 0.30 2008/12/12 04:00:12 ray Exp $";
 
 #define CLONE_KEY(x) ((char *) &x) 
 
 #define CLONE_STORE(x,y)						\
 do {									\
-    if (!hv_store(HSEEN, CLONE_KEY(x), PTRSIZE, SvREFCNT_inc(y), 0)) {	\
+    if (!hv_store(hseen, CLONE_KEY(x), PTRSIZE, SvREFCNT_inc(y), 0)) {	\
 	SvREFCNT_dec(y); /* Restore the refcount */			\
-	croak("Can't store clone in seen hash (HSEEN)");		\
+	croak("Can't store clone in seen hash (hseen)");		\
     }									\
     else {	\
   TRACEME(("storing ref = 0x%x clone = 0x%x\n", ref, clone));	\
@@ -21,14 +21,12 @@ do {									\
     }									\
 } while (0)
 
-#define CLONE_FETCH(x) (hv_fetch(HSEEN, CLONE_KEY(x), PTRSIZE, 0))
+#define CLONE_FETCH(x) (hv_fetch(hseen, CLONE_KEY(x), PTRSIZE, 0))
 
-static SV *hv_clone (SV *, SV *, int);
-static SV *av_clone (SV *, SV *, int);
-static SV *sv_clone (SV *, int);
-static SV *rv_clone (SV *, int);
-
-static HV *HSEEN;
+static SV *hv_clone (SV *, SV *, HV *, int);
+static SV *av_clone (SV *, SV *, HV *, int);
+static SV *sv_clone (SV *, HV *, int);
+static SV *rv_clone (SV *, HV *, int);
 
 #ifdef DEBUG_CLONE
 #define TRACEME(a) printf("%s:%d: ",__FUNCTION__, __LINE__) && printf a;
@@ -37,7 +35,7 @@ static HV *HSEEN;
 #endif
 
 static SV *
-hv_clone (SV * ref, SV * target, int depth)
+hv_clone (SV * ref, SV * target, HV* hseen, int depth)
 {
   HV *clone = (HV *) target;
   HV *self = (HV *) ref;
@@ -52,8 +50,9 @@ hv_clone (SV * ref, SV * target, int depth)
   while (next = hv_iternext (self))
     {
       SV *key = hv_iterkeysv (next);
+      TRACEME(("clone item %s\n", SvPV_nolen(key) ));
       hv_store_ent (clone, key, 
-                sv_clone (hv_iterval (self, next), recur), 0);
+                sv_clone (hv_iterval (self, next), hseen, recur), 0);
     }
 
   TRACEME(("clone = 0x%x(%d)\n", clone, SvREFCNT(clone)));
@@ -61,7 +60,7 @@ hv_clone (SV * ref, SV * target, int depth)
 }
 
 static SV *
-av_clone (SV * ref, SV * target, int depth)
+av_clone (SV * ref, SV * target, HV* hseen, int depth)
 {
   AV *clone = (AV *) target;
   AV *self = (AV *) ref;
@@ -87,7 +86,7 @@ av_clone (SV * ref, SV * target, int depth)
     {
       svp = av_fetch (self, i, 0);
       if (svp)
-	av_store (clone, i, sv_clone (*svp, recur));
+	av_store (clone, i, sv_clone (*svp, hseen, recur));
     }
 
   TRACEME(("clone = 0x%x(%d)\n", clone, SvREFCNT(clone)));
@@ -95,7 +94,7 @@ av_clone (SV * ref, SV * target, int depth)
 }
 
 static SV *
-rv_clone (SV * ref, int depth)
+rv_clone (SV * ref, HV* hseen, int depth)
 {
   SV *clone = NULL;
   SV *rv = NULL;
@@ -109,18 +108,18 @@ rv_clone (SV * ref, int depth)
 
   if (sv_isobject (ref))
     {
-      clone = newRV_noinc(sv_clone (SvRV(ref), depth));
+      clone = newRV_noinc(sv_clone (SvRV(ref), hseen, depth));
       sv_2mortal (sv_bless (clone, SvSTASH (SvRV (ref))));
     }
   else
-    clone = newRV_inc(sv_clone (SvRV(ref), depth));
+    clone = newRV_inc(sv_clone (SvRV(ref), hseen, depth));
     
   TRACEME(("clone = 0x%x(%d)\n", clone, SvREFCNT(clone)));
   return clone;
 }
 
 static SV *
-sv_clone (SV * ref, int depth)
+sv_clone (SV * ref, HV* hseen, int depth)
 {
   SV *clone = ref;
   SV **seen = NULL;
@@ -251,8 +250,11 @@ sv_clone (SV * ref, int depth)
             case '<':	/* PERL_MAGIC_backref */
 	      continue;
               break;
+            case '@':  /* PERL_MAGIC_arylen_p */
+             continue;
+              break;
             default:
-              obj = sv_clone(mg->mg_obj, -1); 
+              obj = sv_clone(mg->mg_obj, hseen, -1); 
           }
         } else {
           TRACEME(("magic object for type %c in NULL\n", mg->mg_type));
@@ -275,15 +277,15 @@ sv_clone (SV * ref, int depth)
     ;;
   }
   else if ( SvTYPE(ref) == SVt_PVHV )
-    clone = hv_clone (ref, clone, depth);
+    clone = hv_clone (ref, clone, hseen, depth);
   else if ( SvTYPE(ref) == SVt_PVAV )
-    clone = av_clone (ref, clone, depth);
+    clone = av_clone (ref, clone, hseen, depth);
     /* 3: REFERENCE (inlined for speed) */
   else if (SvROK (ref))
     {
       TRACEME(("clone = 0x%x(%d)\n", clone, SvREFCNT(clone)));
       SvREFCNT_dec(SvRV(clone));
-      SvRV(clone) = sv_clone (SvRV(ref), depth); /* Clone the referent */
+      SvRV(clone) = sv_clone (SvRV(ref), hseen, depth); /* Clone the referent */
       if (sv_isobject (ref))
       {
           sv_bless (clone, SvSTASH (SvRV (ref)));
@@ -301,10 +303,6 @@ MODULE = Clone		PACKAGE = Clone
 
 PROTOTYPES: ENABLE
 
-BOOT:
-/* Initialize HSEEN */
-HSEEN = newHV(); if (!HSEEN) croak ("Can't initialize seen hash (HSEEN)");
-
 void
 clone(self, depth=-1)
 	SV *self
@@ -312,8 +310,10 @@ clone(self, depth=-1)
 	PREINIT:
 	SV *    clone = &PL_sv_undef;
 	PPCODE:
+        HV *hseen = newHV();
 	TRACEME(("ref = 0x%x\n", self));
-	clone = sv_clone(self, depth);
-	hv_clear(HSEEN);  /* Free HV */
+	clone = sv_clone(self, hseen, depth);
+	hv_clear(hseen);  /* Free HV */
+        SvREFCNT_dec((SV *)hseen);
 	EXTEND(SP,1);
 	PUSHs(sv_2mortal(clone));

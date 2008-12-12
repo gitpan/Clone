@@ -1,4 +1,4 @@
-# $Id: 02hash.t,v 0.19 2006-10-08 03:37:29 ray Exp $
+# $Id: 02hash.t,v 0.19 2006/10/08 03:37:29 ray Exp $
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
 
