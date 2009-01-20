@@ -4,7 +4,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static char *rcs_id = "$Id: Clone.xs,v 0.30 2008/12/12 04:00:12 ray Exp $";
+static char *rcs_id = "$Id: Clone.xs,v 0.31 2009/01/20 04:54:37 ray Exp $";
 
 #define CLONE_KEY(x) ((char *) &x) 
 
@@ -308,9 +308,9 @@ clone(self, depth=-1)
 	SV *self
 	int depth
 	PREINIT:
-	SV *    clone = &PL_sv_undef;
-	PPCODE:
+	SV *clone = &PL_sv_undef;
         HV *hseen = newHV();
+	PPCODE:
 	TRACEME(("ref = 0x%x\n", self));
 	clone = sv_clone(self, hseen, depth);
 	hv_clear(hseen);  /* Free HV */

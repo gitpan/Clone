@@ -1,6 +1,25 @@
 Revision history for Perl extension Clone.
 
 $Log: Changes,v $
+Revision 0.31  2009/01/20 04:54:37  ray
+Made changes for build failure on Solaris, apparently compiler warnings from the last patch are errors in Solaris.
+Also, brought Changes file up to date.
+
+Revision 0.30  2008/12/14 03:33:14  ray
+Updating log: Applied patches from RT # 40957 and #41551.
+
+Revision 0.29  2008/12/14 03:32:41  ray
+Updating log: Applied patches supplied by Andreas Koenig, see RT #34317.
+
+Revision 0.28  2008/12/14 03:31:33  ray
+Updating log: Made a change in CLONE_KEY to the way Clone stores refs in the ref hash.
+Perl no longer uses the SvANY part of the SV struct in the same way which
+meams the old way of storing the hash key is no longer unique.
+Thanks to Slaven Rezic for the patch.
+
+Revision 0.27  2008/12/14 03:30:40  ray
+Updating Log: Latest patch from Ruslan Zakirov. Patched another memory leak.
+
 Revision 0.26  2007/10/15 04:52:42  ray
 Made a change in CLONE_KEY to the way Clone stores refs in the ref hash.
 Perl no longer uses the SvANY part of the SV struct in the same way which
