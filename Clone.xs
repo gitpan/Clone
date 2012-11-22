@@ -4,8 +4,6 @@
 #include "perl.h"
 #include "XSUB.h"
 
-static char *rcs_id = "$Id: Clone.xs,v 0.31 2009/01/20 04:54:37 ray Exp $";
-
 #define CLONE_KEY(x) ((char *) &x) 
 
 #define CLONE_STORE(x,y)						\
@@ -253,13 +251,17 @@ sv_clone (SV * ref, HV* hseen, int depth)
             case '@':  /* PERL_MAGIC_arylen_p */
              continue;
               break;
+            case 'P': /* PERL_MAGIC_tied */
+            case 'p': /* PERL_MAGIC_tiedelem */
+            case 'q': /* PERL_MAGIC_tiedscalar */
+	      magic_ref++;
+	      /* fall through */
             default:
               obj = sv_clone(mg->mg_obj, hseen, -1); 
           }
         } else {
           TRACEME(("magic object for type %c in NULL\n", mg->mg_type));
         }
-	magic_ref++;
 	/* this is plain old magic, so do the same thing */
         sv_magic(clone, 
                  obj,

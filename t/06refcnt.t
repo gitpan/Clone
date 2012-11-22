@@ -7,7 +7,23 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..20\n"; }
+my $HAS_WEAKEN;
+
+BEGIN {
+  $| = 1;
+  my $plan = 20;
+
+  eval 'use Scalar::Util qw( weaken isweak );';
+  if ($@) {
+    $HAS_WEAKEN = 0;
+    $plan = 15;
+  }
+  else {
+    $HAS_WEAKEN = 1;
+  }
+
+  print "1..$plan\n";
+}
 END {print "not ok 1\n" unless $loaded;}
 use Clone qw( clone );
 $loaded = 1;
@@ -22,7 +38,7 @@ print "ok 1\n";
 # code to test for memory leaks
 
 ## use Benchmark;
-use Data::Dumper;
+## use Data::Dumper;
 # use Storable qw( dclone );
 
 $^W = 1;
@@ -112,27 +128,27 @@ package main;
 }
 
 # test for cloning weak reference
-{
-  use Scalar::Util qw(weaken isweak);
-  my $a = new Test::Hash();
-  my $b = { r => $a };
-  $a->{r} = $b;
-  weaken($b->{'r'});
-  my $c = clone($a);
-}
-
-# another weak reference problem, this one causes a segfault in 0.24
-{
-  use Scalar::Util qw(weaken isweak);
-  my $a = new Test::Hash();
+if ( $HAS_WEAKEN ) {
   {
-    my $b = [ $a, $a ];
+    my $a = new Test::Hash();
+    my $b = { r => $a };
     $a->{r} = $b;
-    weaken($b->[0]);
-    weaken($b->[1]);
+    weaken($b->{'r'});
+    my $c = clone($a);
   }
-  my $c = clone($a);
-  # check that references point to the same thing
-  print  "not " unless $c->{'r'}[0] == $c->{'r'}[1];
-  printf "ok %d\n", $::test++;
+
+  # another weak reference problem, this one causes a segfault in 0.24
+  {
+    my $a = new Test::Hash();
+    {
+      my $b = [ $a, $a ];
+      $a->{r} = $b;
+      weaken($b->[0]);
+      weaken($b->[1]);
+    }
+    my $c = clone($a);
+    # check that references point to the same thing
+    print  "not " unless $c->{'r'}[0] == $c->{'r'}[1];
+    printf "ok %d\n", $::test++;
+  }
 }

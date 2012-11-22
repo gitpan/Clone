@@ -1,4 +1,3 @@
-# $Id: Clone.pm,v 0.31 2009/01/20 04:54:37 ray Exp $
 package Clone;
 
 use strict;
@@ -16,7 +15,7 @@ require AutoLoader;
 @EXPORT = qw();
 @EXPORT_OK = qw( clone );
 
-$VERSION = '0.31';
+$VERSION = '0.32';
 
 bootstrap Clone $VERSION;
 
@@ -59,8 +58,7 @@ copies of nested hash, array, scalar and reference types,
 including tied variables and objects.
 
 
-clone() takes a scalar argument and an optional parameter that 
-can be used to limit the depth of the copy. To duplicate lists,
+clone() takes a scalar argument and duplicates it. To duplicate lists,
 arrays or hashes, pass them in by reference. e.g.
     
     my $copy = clone (\@array);
@@ -68,21 +66,28 @@ arrays or hashes, pass them in by reference. e.g.
     # or
 
     my %copy = %{ clone (\%hash) };
-    
 
-For a slower, but more flexible solution see Storable's dclone().
+=head1 SEE ALSO
 
-=head1 AUTHOR
+L<Storable>'s dclone() is a flexible solution for cloning variables,
+albeit slower for average-sized data structures. Simple
+and naive benchmarks show that Clone is faster for data structures
+with 3 or less levels, while dclone() can be faster for structures
+4 or more levels deep.
 
-Ray Finch, rdf@cpan.org
+=head1 COPYRIGHT
 
-Copyright 2001 Ray Finch.
+Copyright 2001-2012 Ray Finch. All Rights Reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
-=head1 SEE ALSO
+=head1 AUTHOR
 
-Storable(3).
+Ray Finch C<< <rdf@cpan.org> >>
+
+Breno G. de Oliveira C<< <garu@cpan.org> >> and
+Florian Ragwitz C<< <rafl@debian.org> >> perform routine maintenance
+releases since 2012.
 
 =cut
