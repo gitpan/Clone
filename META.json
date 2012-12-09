@@ -22,10 +22,6 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "Data::Dumper" : "0",
-            "Hash::Util::FieldHash" : "0",
-            "Scalar::Util" : "0",
-            "Storable" : "0",
             "Test::More" : "0"
          }
       },
@@ -45,7 +41,10 @@
       },
       "license" : [
          "http://dev.perl.org/licenses/"
-      ]
+      ],
+      "repository" : {
+         "url" : "http://github.com/garu/Clone"
+      }
    },
-   "version" : "0.33"
+   "version" : "0.34"
 }

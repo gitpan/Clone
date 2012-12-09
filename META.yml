@@ -3,10 +3,6 @@ abstract: 'recursively copy Perl datatypes'
 author:
   - 'Ray Finch <rdf@cpan.org>'
 build_requires:
-  Data::Dumper: 0
-  Hash::Util::FieldHash: 0
-  Scalar::Util: 0
-  Storable: 0
   Test::More: 0
 configure_requires:
   ExtUtils::MakeMaker: 0
@@ -25,4 +21,5 @@ requires: {}
 resources:
   bugtracker: http://rt.cpan.org/NoAuth/Bugs.html?Dist=Clone
   license: http://dev.perl.org/licenses/
-version: 0.33
+  repository: http://github.com/garu/Clone
+version: 0.34
