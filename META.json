@@ -4,7 +4,7 @@
       "Ray Finch <rdf@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "ExtUtils::MakeMaker version 6.66, CPAN::Meta::Converter version 2.120921",
+   "generated_by" : "ExtUtils::MakeMaker version 6.94, CPAN::Meta::Converter version 2.120351",
    "license" : [
       "perl_5"
    ],
@@ -46,5 +46,5 @@
          "url" : "http://github.com/garu/Clone"
       }
    },
-   "version" : "0.36"
+   "version" : "0.37"
 }
